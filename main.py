@@ -47,7 +47,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # নতুন এবং সংক্ষিপ্ত ওয়েলকাম মেসেজ
     welcome_message = (
         f"<b>🎉 Welcome, {user.mention_html()}!</b>\n\n"
-        "Welcome to <b>ONION Rose BOT</b>, the easiest way to earn money right from your phone.\n\n"
+        "Welcome to <b>ONION 🟢™</b>, the easiest way to earn money right from your phone.\n\n"
         "Ready to start your earning journey? Click the button below to launch the app!"
     )
     
@@ -73,3 +73,4 @@ def main() -> None:
 if __name__ == "__main__":
     keep_alive()
     main()
+
