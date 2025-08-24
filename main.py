@@ -7,7 +7,8 @@ import os
 # --- Environment Variables থেকে সমস্ত কনফিগারেশন লোড করা হচ্ছে ---
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 WEB_APP_URL = os.environ.get('WEB_APP_URL')
-COMMUNITY_URL = os.environ.get('COMMUNITY_URL') # কমিউনিটি লিংকের জন্য নতুন ভেরিয়েবল
+COMMUNITY_URL = os.environ.get('COMMUNITY_URL')
+WELCOME_PHOTO_URL = os.environ.get('WELCOME_PHOTO_URL') # ছবির লিংকের জন্য নতুন ভেরিয়েবল
 
 # --- বটকে ২৪/৭ চালু রাখার জন্য একটি ওয়েব সার্ভার ---
 app = Flask('')
@@ -34,25 +35,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         referral_code = args[0]
         final_web_app_url += f"?ref={referral_code}"
 
-    # দুটি আলাদা সারিতে বাটন তৈরি করা
     keyboard = [
-        [ # প্রথম সারি
-            InlineKeyboardButton(
-                "🟢 Open App",
-                web_app={"url": final_web_app_url}
-            )
-        ],
-        [ # দ্বিতীয় সারি
-            InlineKeyboardButton(
-                "💬 Join Community",
-                url=COMMUNITY_URL  # <-- এখন লিংকটি ভেরিয়েবল থেকে আসছে
-            )
-        ]
+        [InlineKeyboardButton("🟢 Open App", web_app={"url": final_web_app_url})],
+        [InlineKeyboardButton("💬 Join Community", url=COMMUNITY_URL)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # ওয়েলকাম মেসেজ
-    welcome_message = (
+    caption_message = (
         f"<b>🎉 Welcome, {user.mention_html()}!</b>\n\n"
         "You've just stepped into <b>ONION Rose BOT</b>, the easiest way to earn money right from your phone.\n\n"
         "<b>Here's what you can do:</b>\n"
@@ -62,18 +51,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Ready to start? Just click the <b>'Open App'</b> button below!"
     )
     
-    await context.bot.send_message(
+    # ছবিটি ভেরিয়েবল থেকে লোড করে পাঠানো হচ্ছে
+    await context.bot.send_photo(
         chat_id=update.effective_chat.id,
-        text=welcome_message,
+        photo=WELCOME_PHOTO_URL, # <-- এখন লিংকটি ভেরিয়েবল থেকে আসছে
+        caption=caption_message,
         reply_markup=reply_markup,
-        parse_mode='HTML',
-        disable_web_page_preview=True
+        parse_mode='HTML'
     )
 
 def main() -> None:
     # নিশ্চিত করুন যে সমস্ত প্রয়োজনীয় ভেরিয়েবল লোড হয়েছে
-    if not all([BOT_TOKEN, WEB_APP_URL, COMMUNITY_URL]):
-        print("ERROR: One or more environment variables (BOT_TOKEN, WEB_APP_URL, COMMUNITY_URL) are missing!")
+    if not all([BOT_TOKEN, WEB_APP_URL, COMMUNITY_URL, WELCOME_PHOTO_URL]):
+        print("ERROR: One or more environment variables are missing!")
         return
         
     application = Application.builder().token(BOT_TOKEN).build()
