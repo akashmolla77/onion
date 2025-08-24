@@ -4,9 +4,10 @@ from flask import Flask
 from threading import Thread
 import os
 
-# --- Environment Variables থেকে টোকেন এবং URL লোড করা হচ্ছে ---
+# --- Environment Variables থেকে সমস্ত কনফিগারেশন লোড করা হচ্ছে ---
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 WEB_APP_URL = os.environ.get('WEB_APP_URL')
+COMMUNITY_URL = os.environ.get('COMMUNITY_URL') # কমিউনিটি লিংকের জন্য নতুন ভেরিয়েবল
 
 # --- বটকে ২৪/৭ চালু রাখার জন্য একটি ওয়েব সার্ভার ---
 app = Flask('')
@@ -33,25 +34,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         referral_code = args[0]
         final_web_app_url += f"?ref={referral_code}"
 
-    # শুধুমাত্র একটি বাটন তৈরি করা হচ্ছে
+    # দুটি আলাদা সারিতে বাটন তৈরি করা
     keyboard = [
-        [
+        [ # প্রথম সারি
             InlineKeyboardButton(
-                "🟢 Open App & Start Earning!",
+                "🟢 Open App",
                 web_app={"url": final_web_app_url}
+            )
+        ],
+        [ # দ্বিতীয় সারি
+            InlineKeyboardButton(
+                "💬 Join Community",
+                url=COMMUNITY_URL  # <-- এখন লিংকটি ভেরিয়েবল থেকে আসছে
             )
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # নতুন এবং সংক্ষিপ্ত ওয়েলকাম মেসেজ
+    # ওয়েলকাম মেসেজ
     welcome_message = (
         f"<b>🎉 Welcome, {user.mention_html()}!</b>\n\n"
-        "Welcome to <b>ONION 🟢™</b>, the easiest way to earn money right from your phone.\n\n"
-        "Ready to start your earning journey? Click the button below to launch the app!"
+        "You've just stepped into <b>ONION Rose BOT</b>, the easiest way to earn money right from your phone.\n\n"
+        "<b>Here's what you can do:</b>\n"
+        "✅ Watch daily videos for cash.\n"
+        "✅ Complete simple tasks.\n"
+        "✅ Earn bonuses by referring friends.\n\n"
+        "Ready to start? Just click the <b>'Open App'</b> button below!"
     )
     
-    # মেসেজ এবং বাটন পাঠানো হচ্ছে
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=welcome_message,
@@ -61,8 +71,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 def main() -> None:
-    if not BOT_TOKEN or not WEB_APP_URL:
-        print("ERROR: BOT_TOKEN or WEB_APP_URL not found in environment variables!")
+    # নিশ্চিত করুন যে সমস্ত প্রয়োজনীয় ভেরিয়েবল লোড হয়েছে
+    if not all([BOT_TOKEN, WEB_APP_URL, COMMUNITY_URL]):
+        print("ERROR: One or more environment variables (BOT_TOKEN, WEB_APP_URL, COMMUNITY_URL) are missing!")
         return
         
     application = Application.builder().token(BOT_TOKEN).build()
@@ -73,4 +84,3 @@ def main() -> None:
 if __name__ == "__main__":
     keep_alive()
     main()
-
